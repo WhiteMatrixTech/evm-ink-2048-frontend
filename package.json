@@ -1,0 +1,13 @@
+{
+  "name": "evm-ink-2048-frontend",
+  "version": "1.0.0",
+  "repository": "git@github.com:WhiteMatrixTech/evm-ink-2048-frontend.git",
+  "author": "hexi1997 <18715156450@163.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "minify index.html > index.min.html"
+  },
+  "devDependencies": {
+    "minify": "^10.5.2"
+  }
+}
