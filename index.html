@@ -343,10 +343,48 @@
     </div>
 </body>
 <script>
-    var board;
-    var score = 0;
-    var rows = 4;
-    var columns = 4;
+    const seedId = Math.floor(Math.random() * 10000);
+    //边框素材数组，数组长度为10
+    const borderAssetsArray = [];
+    // 内容区背景素材数组，数组长度为10
+    const contentBgAssetsArray = [];
+
+    // 文本纹理背景素材数组，长度为10
+    const textBgTextureAssetsArray = [];
+    // 不同纹理下，不同数字与纹理背景颜色的对应关系，二维数组，第一层的数组index对应纹理背景素材数组index。第二层的数组长度也为10,分别代表数字2,4,8,16,32,64,128,256,512,1024,2048对应纹理背景颜色
+    const textBgColorMap = [["#44dbf2", "#49de9a", "#ff8b98", "#fe9019", "#ff5e51", "#b795ff", "#f49262", "#7289ff", "#f470e6", "#9edd42", "#f9d945"], [], [], [], [], [], [], [], [], []];
+
+    // 数字2在不同字体下的图片数组，注意下面几个数组的字体顺序应该保持一致
+    const fontAssets2Array = [];
+    // 数字4在不同字体下的图片数组
+    const fontAssets4Array = [];
+    // 数字8在不同字体下的图片数组
+    const fontAssets8Array = [];
+    // 数字16在不同字体下的图片数组
+    const fontAssets16Array = [];
+    // 数字32在不同字体下的图片数组
+    const fontAssets32Array = [];
+    // 数字64在不同字体下的图片数组
+    const fontAssets64Array = [];
+    // 数字128在不同字体下的图片数组
+    const fontAssets128Array = [];
+    // 数字256在不同字体下的图片数组
+    const fontAssets256Array = [];
+    // 数字512在不同字体下的图片数组
+    const fontAssets512Array = [];
+    // 数字1024在不同字体下的图片数组
+    const fontAssets1024Array = [];
+    // 数字2048在不同字体下的图片数组
+    const fontAssets2048Array = [];
+
+
+    // 数组内字符串由borderAssetIndex、contentBgAssetIndex、textBgAssetIndex、fontAssetIndex拼接，数组长度10000,数组index对应seed id
+    // 数组前500个是套装，需要指定，后面随机（不和套装重复）
+    const seedIdMapAssets = ["0123"]
+    let board;
+    let score = 0;
+    let rows = 4;
+    let columns = 4;
     window.onload = function () {
         setGame();
     }
