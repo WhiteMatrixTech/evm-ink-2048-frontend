@@ -6,11 +6,15 @@
   "license": "MIT",
   "scripts": {
     "dev": "serve -s ./",
-    "build": "minify index.html > index.min.html"
+    "build": "minify index.html > index.min.html",
+    "dev:algo": "node algorithm.js"
   },
   "devDependencies": {
     "minify": "^10.5.2",
     "serve": "^14.2.1"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "dependencies": {
+    "csv-reader": "^1.0.12"
+  }
 }
