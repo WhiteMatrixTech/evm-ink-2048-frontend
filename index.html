@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/icon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap" rel="stylesheet">
     <title>2048</title>
 
     <style>
-        /* pc  */
         html {
             scroll-behavior: smooth;
             overscroll-behavior: none;
@@ -20,13 +20,12 @@
         body {
             font-family: 'Baloo 2', sans-serif;
             margin: 0px;
-            padding: 0px;
+            padding: 16px;
             background: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/bg.png') #b7effe no-repeat top center/cover;
             display: flex;
             align-items: center;
             flex-direction: column;
             text-align: center;
-            width: 100%;
             color: white;
             min-height: 100vh;
         }
@@ -146,55 +145,95 @@
             }
         }
 
-        #text {
-            position: relative;
-            margin-top: 50px;
-            text-align: left;
-        }
-
-        #list {
-            margin: 30px;
-            text-align: left;
-        }
-
-        #over {
-            background: rgba(0, 0, 0, 0.4);
-            width: 30rem;
-            height: 30rem;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-around;
-            position: absolute;
-            z-index: 2;
-            margin: auto auto;
-            font-size: 2rem;
-            top: 0vw;
-        }
-
-        #over-text {
-            top: 5px;
-            display: inline-block;
-            position: absolute;
-        }
-
-        #btns {
+        #doneContainer {
             display: flex;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #02070BA8;
+            justify-content: center;
             align-items: center;
-            justify-content: space-evenly;
-            top: 21vw;
-            position: absolute;
         }
 
-        .btn {
-            font-size: 1.5rem;
-            width: 8rem;
-            height: 4rem;
-            margin: 2rem;
-            color: white;
-            background-color: grey;
-            border: 2px solid white;
-            border-radius: 1rem;
+        #done {
+            width: 100%;
+            max-width: 533px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        #done #tryAgain {
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .doneBg {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            animation-name: spin;
+            animation-duration: 40000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        .doneText {
+            height: 11.37%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 100;
+        }
+
+        .winOrLoseImgContainer {
+            width: 100%;
+            aspect-ratio: 0.97;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .win .doneBg {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_bg.webp');
+        }
+
+        .win .doneText {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_text.svg');
+            width: 46.37%;
+        }
+
+        .lose .doneBg {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_bg.webp');
+        }
+
+        .lose .doneText {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_text.svg');
+            width: 59.45%;
         }
     </style>
 </head>
@@ -210,14 +249,19 @@
         <div id="chessBoardBg"></div>
         <div id="frame"></div>
         <div id="game">
-            <div id="over">
-                <h1 id="over-text">Game Over!</h1>
-                <div id="btns">
-                    <button class="btn" onclick="tryAgain()">Try Again</button>
-                    <button class="btn" onclick="share()">Share</button>
+
+            <div id="done" class="">
+                <div id="doneContainer">
                 </div>
+                <div class="winOrLoseImgContainer">
+                    <div class="doneBg"></div>
+                    <div class="doneText"></div>
+                </div>
+                <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/try_again.png"
+                    alt="try again" id="tryAgain" width="232" onclick="tryAgain()" />
             </div>
         </div>
+
     </div>
 
 
@@ -257,7 +301,8 @@
         const fonts = nums.map(num => {
             return baseUrl + gameConfig[2] + "_Font_" + num + ".png"
         })
-        preloadImages([...tileBgs, ...fonts])
+        const otherAssets = ["win_bg.webp", "win_text.svg", "lose_bg.webp", "lose_text.svg", "try_again.png"].map(item => assetFolder + item);
+        preloadImages([...tileBgs, ...fonts, ...otherAssets])
     }
 
     function getGameConfig(seedId) {
@@ -324,6 +369,9 @@
         }
         const gameContainerElement = document.getElementById('gameContainer');
         gameContainerElement.style.aspectRatio = frameAspectRadio;
+        if (frame === "H") {
+            gameContainerElement.style.marginLeft = '-40px'
+        }
 
         const chessBoardBgElement = document.getElementById('chessBoardBg');
         chessBoardBgElement.style.backgroundImage = "url('" + chessBgUrl + "')";
@@ -345,11 +393,7 @@
             [0, 0, 0, 0],
             [0, 0, 0, 0],
             [0, 0, 0, 0],
-            [0, 0, 0, 0]
-            // [2, 4, 8, 16],
-            // [32, 64, 128, 256],
-            // [512, 1024, 2, 32],
-            // [4, 2, 16, 8]
+            [0, 0, 0, 0],
         ]
 
         document.getElementById('score').innerHTML = score;
@@ -417,25 +461,11 @@
 
     // animation for tile and gameover function conditionals
     function slideTile(tile, r, c) {
-        // const tileElement = document.getElementById(r.toString() + "-" + c.toString());
-        // const initialX = tileElement.offsetLeft;
-        // const initialY = tileElement.offsetTop;
-        // const finalX = c * 120;
-        // const finalY = r * 120;
-        // const deltaX = finalX - initialX;
-        // const deltaY = finalY - initialY;
-
-        // // tile.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-        // tile.style.transition = "transform 0.3s";
-        // tile.addEventListener("transitionend", () => {
-        //     tile.style.transform = "";
-        //     tile.style.transition = "";
-        // });
         setTimeout(() => {
             tile.style.transform = "translate(0, 0)";
             if (gameOver()) {
                 gameOver();
-                document.getElementById('over').style.display = 'flex';
+                document.getElementById('done').style.display = 'flex';
             }
         }, 10);
     }
@@ -476,10 +506,10 @@
     }
 
     document.addEventListener("keydown", (e) => {
-        if (document.getElementById('over').style.display == 'flex') {
+        if (document.getElementById('done').style.display == 'flex') {
             return;
         }
-        else if (e.code == "ArrowLeft" || e.code == "ArrowRight" || e.code == "ArrowUp" || e.code == "ArrowDown") {
+        if (e.code == "ArrowLeft" || e.code == "ArrowRight" || e.code == "ArrowUp" || e.code == "ArrowDown") {
             e.preventDefault(); // Disable default arrow key behavior (scrolling)
         }
 
@@ -518,8 +548,9 @@
 
             }
             else if (row[i] == 2048) {
-                document.getElementById('over-text').innerHTML = 'You Won!';
-                document.getElementById('over').style.display = 'flex';
+                const doneEle = document.getElementById('done');
+                doneEle.style.display = 'flex';
+                doneEle.className = "win"
             }// [2, 2, 2] --> [4, 0, 2]
         }
 
@@ -606,23 +637,16 @@
         setTwo();
     }
     function tryAgain() {
-        document.getElementById("over").style.display = "none";
+        document.getElementById('done').style.display = "none";
         score = 0;
         document.querySelectorAll('.tile').forEach(e => e.remove());
         setGame();
     }
-    function share() {
-        const shareData = {
-            title: "2048",
-            text: "🎮 Check out this addictive web game, 2048! 🧩🔢 Merge numbered tiles, strategize, and aim for the elusive 2048 tile. Challenge your mind and test your skills in this captivating puzzle adventure. Can you conquer the board and achieve the highest score? Play now and see if you have what it takes to become a 2048 champion! 💪💯 #2048 #puzzlegame #addictivefun #brainteaser",
-            url: "http://blaisepascal287.github.io/game/2048.html"
-        };
-        navigator.share(shareData);
-    }
+
     function gameOver() {
         // Check if the player has achieved the 2048 tile
         if (board.some(row => row.includes(2048))) {
-            document.getElementById('over-text').innerHTML = 'You Won!';
+            document.getElementById('done').className = 'win'
             return true;
         }
         for (let r = 0; r < rows; r++) {
@@ -641,7 +665,7 @@
                 }
             }
         }
-        document.getElementById('over-text').innerHTML = 'Game Over!';
+        document.getElementById('done').className = 'lose';
         return true;
     }
 </script>
