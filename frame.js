@@ -1,345 +1,372 @@
 document.body.innerHTML = `<body>
-        <style>
-        /* pc  */
-        html {
-            scroll-behavior: smooth;
-            overscroll-behavior: none;
+<style>
+    html {
+        scroll-behavior: smooth;
+        overscroll-behavior: none;
+    }
+
+    body {
+        font-family: 'Baloo 2', sans-serif;
+        margin: 0px;
+        padding: 16px;
+        background: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/bg.png') #b7effe no-repeat top center/cover;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+        color: white;
+        min-height: 100vh;
+    }
+
+    body::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    body::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    body::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background: rgb(170, 170, 168);
+    }
+
+    .titleImg {
+        width: 386px;
+        margin-top: 44px;
+    }
+
+    .scoreContainer {
+        margin: 40px auto;
+        position: relative;
+        width: 100%;
+        max-width: 533px;
+        height: 68px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #236f81;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .scoreContainer img {
+        position: absolute;
+        left: 1px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 27%;
+        min-width: 144px;
+    }
+
+    #score {
+        font-size: 40px;
+    }
+
+    #gameContainer {
+        width: 100%;
+        max-width: 533px;
+        position: relative;
+    }
+
+    #chessBoardBg {
+        position: absolute;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        background-size: contain;
+        width: 100%;
+    }
+
+    #frame {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-size: contain;
+    }
+
+    #game {
+        position: absolute;
+        display: grid;
+        aspect-ratio: 1;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        column-gap: 1.17%;
+        row-gap: 0.98%;
+        overflow: hidden;
+        border-radius: 8px;
+        padding: 3.32%;
+        box-sizing: border-box;
+    }
+
+    .description {
+        font-size: 1rem;
+        margin: 5vmin;
+    }
+
+    .tile {
+        display: flex;
+        aspect-ratio: 1;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        background-size: cover;
+        background-position: center;
+    }
+
+    @keyframes newTileAnimation {
+        0% {
+            transform: scale(0);
         }
 
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0px;
-            padding: 0px;
-            /* background: linear-gradient(to bottom left, #B2EBF2, #0D47A1); */
-            /* background: linear-gradient(to bottom left, #E1BEE7, #4A148C); */
-            /* background: linear-gradient(to bottom left, #C8E6C9, #1B5E20); */
-            /* background: linear-gradient(to bottom left, #F8BBD0, #4bccdd, #4A148C); */
-            background: linear-gradient(45deg, #ff66cc, #66ccff, #9933ff) no-repeat center center/cover;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            text-align: center;
-            /* height: 100%; */
-            width: 100%;
-            color: white;
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    @keyframes movementAnimation {
+        0% {
+            transform: translate(0, 0);
         }
 
-        body::-webkit-scrollbar {
-            width: 7px;
+        100% {
+            transform: translate(var(--x-translation), var(--y-translation));
+        }
+    }
+
+    #doneContainer {
+        display: flex;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #02070BA8;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #done {
+        width: 100%;
+        max-width: 533px;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 10;
+    }
+
+    #done #tryAgain {
+        cursor: pointer;
+        z-index: 100;
+    }
+
+    .doneBg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background-size: cover;
+        background-position: center;
+        animation-name: spin;
+        animation-duration: 40000ms;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+    }
+
+    .doneText {
+        height: 11.37%;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: 100;
+    }
+
+    .winOrLoseImgContainer {
+        width: 100%;
+        aspect-ratio: 0.97;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
         }
 
-        body::-webkit-scrollbar-track {
-            background: transparent;
+        to {
+            transform: rotate(360deg);
         }
+    }
 
-        body::-webkit-scrollbar-thumb {
-            border-radius: 5px;
-            background: rgb(170, 170, 168);
-        }
+    .win .doneBg {
+        background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_bg.webp');
+    }
 
-        #board {
-            height: 30rem;
-            width: 30rem;
-            background-color: #EAEAEA;
-            top: 5vmin;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            margin: 0px auto;
-        }
+    .win .doneText {
+        background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_text.svg');
+        width: 46.37%;
+    }
 
-        #name {
-            width: 200px;
-            margin-top: 20px;
-            font-weight: bold;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 4rem;
-        }
+    .lose .doneBg {
+        background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_bg.webp');
+    }
 
-        #score {
-            border-top: 2px solid white;
-            padding-top: 10px;
-            width: 400px;
-            margin: 10px;
-            font-size: 1.5rem;
-        }
+    .lose .doneText {
+        background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_text.svg');
+        width: 59.45%;
+    }
+</style>
+<img class="titleImg" src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/logo.svg" />
+<div class="scoreContainer">
+    <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/score.png" />
+    <span id="score"></span>
+</div>
+<div id="gameContainer">
+    <!-- 背景图层 -->
+    <div id="chessBoardBg"></div>
+    <div id="frame"></div>
+    <div id="game">
 
-        .description {
-            font-size: 1rem;
-            margin: 5vmin;
-        }
-
-        .tile {
-            color: #ffffff;
-            background-color: #7c7c7c;
-            width: 7rem;
-            height: 7rem;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 2.5rem;
-        }
-
-        @keyframes newTileAnimation {
-            0% {
-                transform: scale(0);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        @keyframes movementAnimation {
-            0% {
-                transform: translate(0, 0);
-            }
-
-            100% {
-                transform: translate(var(--x-translation), var(--y-translation));
-            }
-        }
-
-        #text {
-            position: relative;
-            margin-top: 50px;
-            text-align: left;
-        }
-
-        #list {
-            margin: 30px;
-            text-align: left;
-        }
-
-        .x2 {
-            background-color: #d9a2c9;
-            color: #ffffff;
-        }
-
-        .x4 {
-            background-color: #a2c9d9;
-            color: #ffffff;
-        }
-
-        .x8 {
-            background-color: #c9d9a2;
-            color: #ffffff;
-        }
-
-        .x16 {
-            background-color: #c9d9a2;
-            color: #ffffff;
-        }
-
-        .x32 {
-            background-color: #d9a2a2;
-            color: #ffffff;
-        }
-
-        .x64 {
-            background-color: #c9d9a2;
-            color: #ffffff;
-        }
-
-        .x128 {
-            background-color: #a2c9d9;
-            color: #ffffff;
-        }
-
-        .x256 {
-            background-color: #d9a2c9;
-            color: #ffffff;
-        }
-
-        .x512 {
-            background-color: #c9d9a2;
-            color: #ffffff;
-        }
-
-        .x1024 {
-            background-color: #c9d9a2;
-            color: #ffffff;
-        }
-
-        .x2048 {
-            background-color: #d9a2a2;
-            color: #ffffff;
-        }
-
-        #over {
-            background: rgba(0, 0, 0, 0.4);
-            width: 30rem;
-            height: 30rem;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-around;
-            position: absolute;
-            z-index: 2;
-            margin: auto auto;
-            font-size: 2rem;
-            top: 0vw;
-        }
-
-        #over-text {
-            top: 5px;
-            display: inline-block;
-            position: absolute;
-        }
-
-        #btns {
-            display: flex;
-            align-items: center;
-            justify-content: space-evenly;
-            top: 21vw;
-            position: absolute;
-        }
-
-        .btn {
-            font-size: 1.5rem;
-            width: 8rem;
-            height: 4rem;
-            margin: 2rem;
-            color: white;
-            background-color: grey;
-            border: 2px solid white;
-            border-radius: 1rem;
-        }
-
-
-        /* mobile  */
-        @media only screen and (max-width: 1081px) {
-            body {
-                width: auto;
-            }
-
-            #name {
-                font-size: 4rem;
-            }
-
-            .description {
-                width: 60vw;
-            }
-
-            #list {
-                width: 60vw;
-            }
-
-            #text {
-                margin-top: 20vw;
-            }
-
-            #score {
-                font-size: 3rem;
-            }
-
-            #board {
-                width: 70vw;
-                height: 70vw;
-                top: 10vw;
-            }
-
-            #over {
-                font-size: 1.5rem;
-                width: 70vw;
-                height: 70vw;
-            }
-
-            .tile {
-                width: 16.5vw;
-                height: 16.5vw;
-                font-size: 2rem;
-            }
-
-            #btns {
-                top: 40vw;
-            }
-
-            .btn {
-                font-size: 1.4rem;
-                width: 22vw;
-                height: 10vw;
-            }
-        }
-    </style>
-<span id="name">2048</span>
-<p id="score"></p>
-<div id="board">
-    <div id="over">
-        <h1 id="over-text">Game Over!</h1>
-        <div id="btns">
-            <button class="btn" onclick="tryAgain()">Try Again</button>
-            <button class="btn" onclick="share()">Share</button>
+        <div id="done" class="">
+            <div id="doneContainer">
+            </div>
+            <div class="winOrLoseImgContainer">
+                <div class="doneBg"></div>
+                <div class="doneText"></div>
+            </div>
+            <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/try_again.png"
+                alt="try again" id="tryAgain" width="232" onclick="tryAgain()" />
         </div>
     </div>
-</div>
-<div id="text">
-    <h1 style="margin-left: 30px;">Rules to Play the Game:</h1>
-    <ol type="number" id="list">
-        <li>The game is played on a 4x4 grid, totaling 16 squares.</li>
-        <li>Each square can hold a tile with a number, initially starting with two tiles randomly populated with the
-            numbers 2 or 4.</li>
-        <li>The objective of the game is to reach the 2048 tile by combining tiles with the same numbers</li>
-        <li>You can move the tiles in four directions: up, down, left, or right. This can be done using arrow keys
-            on a keyboard or swipe gestures on a touchscreen device.</li>
-        <li>When you make a move, all the tiles on the grid will slide as far as possible in the chosen direction.
-        </li>
-        <li>If two tiles with the same number collide as a result of a move, they will merge into a new tile with
-            the sum of their values.</li>
-        <li>After each move, a new tile (either 2 or 4) will appear randomly on an empty square of the grid.</li>
-        <li>The game ends if the entire grid is filled with tiles and there are no more valid moves available.</li>
-        <li>Your score is based on the sum of all merged tiles during the game.</li>
-        <li>The highest possible tile is 2048, but you can continue playing after reaching it to achieve even higher
-            numbers and aim for a higher score.</li>
-        Remember, strategic planning and careful consideration of each move are crucial to success in 2048. Good
-        luck and enjoy the game!
-    </ol>
-    <h1 style="margin-left: 30px;">About</h1>
-    <p class="description">
-        2048 is an addictive and challenging puzzle game that will put your strategic thinking and numerical skills
-        to the test. The game takes place on a 4x4 grid, where your objective is to combine tiles with the same
-        numbers to reach the elusive tile numbered 2048.
-    </p>
-    <p class="description">
-        At the beginning of the game, you are presented with two tiles randomly populated with the numbers 2 or 4.
-        Using arrow keys or swipe gestures, you can move all the tiles on the grid in four directions: up, down,
-        left, or right. As you make a move, all tiles slide as far as possible in the chosen direction, merging with
-        any adjacent tile of the same number.
-    </p>
-    <p class="description">
-        The true challenge lies in the limited space available on the grid, as well as the strategic decision-making
-        involved in every move. You must carefully plan your moves to avoid filling up the grid without creating
-        opportunities for merging tiles. Each move adds a new tile to the grid, further complicating your task.
-    </p>
-    <p class="description">
-        Your goal is to reach the tile numbered 2048 by merging smaller tiles. However, the game doesn't end there.
-        If you manage to reach 2048, you can continue playing to achieve even higher numbers and strive for the
-        highest possible score.
-    </p>
-    <p class="description">
-        2048 offers a simple and intuitive interface, with visually appealing and distinctively colored tiles
-        representing different numbers. The game provides a stimulating experience that combines logic, strategy,
-        and patience, making it suitable for players of all ages and skill levels.
-    </p>
-    <p class="description">
-        With its addictive gameplay, 2048 provides endless hours of entertainment and brain-teasing challenges. Can
-        you navigate the grid, make the right moves, and conquer the ultimate numerical goal of 2048?
-    </p>
+
 </div>
 </body>`;
-var board;
-var score = 0;
-var rows = 4;
-var columns = 4;
-console.log('seed',window.seedId);
+
+const baseUrl =
+  "https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/";
+const assetFolder = baseUrl + "assets/";
+const gameConfig = getGameConfig(window.seedId);
+const chessBgUrl = baseUrl + gameConfig[0] + "_Chessboard_BG.png";
+const frameUrl = baseUrl + gameConfig[3] + "_Frame.png";
+let board;
+let score = 0;
+let rows = 4;
+let columns = 4;
 window.onload = function () {
+  updateStyleInDiffFrame(gameConfig[3]);
   setGame();
+  prefetchAssets(gameConfig);
 };
+
+function preloadImages(imageArray) {
+  for (let i = 0; i < imageArray.length; i++) {
+    const img = new Image();
+    img.src = imageArray[i];
+  }
+}
+
+function prefetchAssets(gameConfig) {
+  const nums = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+  const tileBgs = nums.map((num) => {
+    return baseUrl + gameConfig[1] + "_Tile_BG_" + num + ".png";
+  });
+  const fonts = nums.map((num) => {
+    return baseUrl + gameConfig[2] + "_Font_" + num + ".png";
+  });
+  const otherAssets = [
+    "win_bg.webp",
+    "win_text.svg",
+    "lose_bg.webp",
+    "lose_text.svg",
+    "try_again.png",
+  ].map((item) => assetFolder + item);
+  preloadImages([...tileBgs, ...fonts, ...otherAssets]);
+}
+
+function getGameConfig(seedId) {
+  const gameConfig = window.allSeeds[seedId];
+  return gameConfig;
+}
+
+function updateStyleInDiffFrame(frame) {
+  let contentAreaWidth = "";
+  let contentAreaLeftOffset = "";
+  let contentAreaTopOffset = "";
+  let frameAspectRadio = "";
+  if (frame === "A" || frame === "C" || frame === "D" || frame === "K") {
+    contentAreaWidth = "97.34%";
+    contentAreaLeftOffset = "1.33%";
+    contentAreaTopOffset = "1.33%";
+    frameAspectRadio = "1";
+  } else if (frame === "B") {
+    contentAreaLeftOffset = "4.63%";
+    contentAreaWidth = "91.27%";
+    contentAreaTopOffset = "6.55%";
+    frameAspectRadio = "0.9672";
+  } else if (frame === "E") {
+    contentAreaLeftOffset = "6.31%";
+    contentAreaWidth = "87.37%";
+    contentAreaTopOffset = "12.92%";
+    frameAspectRadio = "0.9832";
+  } else if (frame === "F") {
+    contentAreaLeftOffset = "7.57%";
+    contentAreaWidth = "84.21%";
+    contentAreaTopOffset = "9.42%";
+    frameAspectRadio = "1.0611";
+  } else if (frame === "G") {
+    contentAreaWidth = "97.34%";
+    contentAreaLeftOffset = "1.33%";
+    contentAreaTopOffset = "4.77%";
+    frameAspectRadio = "0.9651";
+  } else if (frame === "H") {
+    contentAreaWidth = "86.78%";
+    contentAreaLeftOffset = "11.53%";
+    contentAreaTopOffset = "9.74%";
+    frameAspectRadio = "1.0261";
+  } else if (frame === "I") {
+    contentAreaWidth = "93.6%";
+    contentAreaLeftOffset = "3.11%";
+    contentAreaTopOffset = "3.1%";
+    frameAspectRadio = "0.9982";
+  } else if (frame === "J") {
+    contentAreaWidth = "97.34%";
+    contentAreaLeftOffset = "1.33%";
+    contentAreaTopOffset = "12.92%";
+    frameAspectRadio = "0.8826";
+  } else if (frame === "L") {
+    contentAreaWidth = "82.71%";
+    contentAreaLeftOffset = "8.72%";
+    contentAreaTopOffset = "8.66%";
+    frameAspectRadio = "1.0509";
+  }
+  const gameContainerElement = document.getElementById("gameContainer");
+  gameContainerElement.style.aspectRatio = frameAspectRadio;
+  if (frame === "H") {
+    gameContainerElement.style.marginLeft = "-40px";
+  }
+
+  const chessBoardBgElement = document.getElementById("chessBoardBg");
+  chessBoardBgElement.style.backgroundImage = "url('" + chessBgUrl + "')";
+  chessBoardBgElement.style.left = contentAreaLeftOffset;
+  chessBoardBgElement.style.top = contentAreaTopOffset;
+  chessBoardBgElement.style.width = contentAreaWidth;
+
+  const frameElement = document.getElementById("frame");
+  frameElement.style.backgroundImage = "url('" + frameUrl + "')";
+
+  const gameElement = document.getElementById("game");
+  gameElement.style.left = contentAreaLeftOffset;
+  gameElement.style.top = contentAreaTopOffset;
+  gameElement.style.width = contentAreaWidth;
+}
 
 function setGame() {
   board = [
@@ -347,21 +374,16 @@ function setGame() {
     [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0],
-    // [2, 4, 8, 16],
-    // [32, 64, 128, 256],
-    // [512, 1024, 2, 32],
-    // [4, 2, 16, 8]
   ];
 
-  document.getElementById("score").innerHTML = "Score: " + score;
+  document.getElementById("score").innerHTML = score;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < columns; c++) {
-      //<div></div>
       let tile = document.createElement("div");
       tile.id = r.toString() + "-" + c.toString();
       let num = board[r][c];
       updateTile(tile, num);
-      document.getElementById("board").append(tile);
+      document.getElementById("game").append(tile);
     }
   }
   setTwo();
@@ -389,8 +411,7 @@ function setTwo() {
     if (board[r][c] == 0) {
       board[r][c] = 2;
       let tile = document.getElementById(r.toString() + "-" + c.toString());
-      tile.innerText = "2";
-      tile.classList.add("x2");
+      updateTile(tile, 2);
       tile.style.animation = "newTileAnimation 0.3s";
       tile.addEventListener("animationend", () => {
         tile.style.animation = "";
@@ -405,44 +426,39 @@ function updateTile(tile, num) {
   tile.classList.value = ""; // clear the classList
   tile.classList.add("tile");
   if (num > 0) {
-    tile.innerText = num;
+    tile.innerHTML =
+      "<img src='" +
+      baseUrl +
+      gameConfig[2] +
+      "_Font_" +
+      num +
+      ".png' style='height:23.5%' />";
+    tile.style.backgroundImage =
+      "url('" + baseUrl + gameConfig[1] + "_Tile_BG_" + num + ".png'";
     if (num <= 1024) {
       tile.classList.add("x" + num.toString());
     } else {
       tile.classList.add("x2048");
     }
+  } else {
+    tile.style.backgroundImage =
+      "url('" + baseUrl + gameConfig[0] + "_Tile_BG_Default.png'";
   }
 }
 
 // animation for tile and gameover function conditionals
 function slideTile(tile, r, c) {
-  const tileElement = document.getElementById(
-    r.toString() + "-" + c.toString()
-  );
-  const initialX = tileElement.offsetLeft;
-  const initialY = tileElement.offsetTop;
-  const finalX = c * 120;
-  const finalY = r * 120;
-  const deltaX = finalX - initialX;
-  const deltaY = finalY - initialY;
-
-  tile.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-  tile.style.transition = "transform 0.3s";
-  tile.addEventListener("transitionend", () => {
-    tile.style.transform = "";
-    tile.style.transition = "";
-  });
   setTimeout(() => {
     tile.style.transform = "translate(0, 0)";
     if (gameOver()) {
       gameOver();
-      document.getElementById("over").style.display = "flex";
+      document.getElementById("done").style.display = "flex";
     }
   }, 10);
 }
 
 // swipe event listener
-const swipeElement = document.getElementById("board");
+const swipeElement = document.getElementById("game");
 let startX, startY;
 swipeElement.addEventListener("touchstart", touchStart, false);
 swipeElement.addEventListener("touchend", touchEnd, false);
@@ -475,9 +491,10 @@ function touchEnd(event) {
 }
 
 document.addEventListener("keydown", (e) => {
-  if (document.getElementById("over").style.display == "flex") {
+  if (document.getElementById("done").style.display == "flex") {
     return;
-  } else if (
+  }
+  if (
     e.code == "ArrowLeft" ||
     e.code == "ArrowRight" ||
     e.code == "ArrowUp" ||
@@ -498,7 +515,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Disable scroll on swipe
-document.getElementById("board").addEventListener(
+document.getElementById("game").addEventListener(
   "touchmove",
   function (event) {
     event.preventDefault();
@@ -520,10 +537,11 @@ function slide(row) {
       row[i] *= 2;
       row[i + 1] = 0;
       score += row[i];
-      document.getElementById("score").innerHTML = "Score: " + score;
+      document.getElementById("score").innerHTML = score;
     } else if (row[i] == 2048) {
-      document.getElementById("over-text").innerHTML = "You Won!";
-      document.getElementById("over").style.display = "flex";
+      const doneEle = document.getElementById("done");
+      doneEle.style.display = "flex";
+      doneEle.className = "win";
     } // [2, 2, 2] --> [4, 0, 2]
   }
 
@@ -610,23 +628,16 @@ function slideDown() {
   setTwo();
 }
 function tryAgain() {
-  document.getElementById("over").style.display = "none";
+  document.getElementById("done").style.display = "none";
   score = 0;
   document.querySelectorAll(".tile").forEach((e) => e.remove());
   setGame();
 }
-function share() {
-  const shareData = {
-    title: "2048",
-    text: "🎮 Check out this addictive web game, 2048! 🧩🔢 Merge numbered tiles, strategize, and aim for the elusive 2048 tile. Challenge your mind and test your skills in this captivating puzzle adventure. Can you conquer the board and achieve the highest score? Play now and see if you have what it takes to become a 2048 champion! 💪💯 #2048 #puzzlegame #addictivefun #brainteaser",
-    url: "http://blaisepascal287.github.io/game/2048.html",
-  };
-  navigator.share(shareData);
-}
+
 function gameOver() {
   // Check if the player has achieved the 2048 tile
   if (board.some((row) => row.includes(2048))) {
-    document.getElementById("over-text").innerHTML = "You Won!";
+    document.getElementById("done").className = "win";
     return true;
   }
   for (let r = 0; r < rows; r++) {
@@ -645,6 +656,6 @@ function gameOver() {
       }
     }
   }
-  document.getElementById("over-text").innerHTML = "Game Over!";
+  document.getElementById("done").className = "lose";
   return true;
 }

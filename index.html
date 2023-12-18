@@ -10,7 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap" rel="stylesheet">
     <title>2048</title>
+</head>
 
+<body>
     <style>
         html {
             scroll-behavior: smooth;
@@ -236,9 +238,6 @@
             width: 59.45%;
         }
     </style>
-</head>
-
-<body>
     <img class="titleImg" src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/logo.svg" />
     <div class="scoreContainer">
         <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/score.png" />
@@ -263,16 +262,14 @@
         </div>
 
     </div>
-
-
 </body>
+
 <script
     src="https://evm.ink/eip155:137/content/0x8a5aa7efbd761a466514b31ba6218ec638464e04d64bb7d37fa696fa2054055d:0"></script>
 <script>
-    const seedId = Math.floor(Math.random() * 10000);
     const baseUrl = 'https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/'
     const assetFolder = baseUrl + 'assets/'
-    const gameConfig = getGameConfig(seedId)
+    const gameConfig = getGameConfig(window.seedId)
     const chessBgUrl = baseUrl + gameConfig[0] + "_Chessboard_BG.png";
     const frameUrl = baseUrl + gameConfig[3] + "_Frame.png";
     let board;
@@ -293,7 +290,6 @@
     }
 
     function prefetchAssets(gameConfig) {
-        const defaultTileBg = baseUrl + gameConfig[0] + "_Tile_BG_Default.png'";
         const nums = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048]
         const tileBgs = nums.map(num => {
             return baseUrl + gameConfig[1] + "_Tile_BG_" + num + ".png"
