@@ -223,6 +223,19 @@ document.body.innerHTML = `<body>
         background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_text.svg');
         width: 59.45%;
     }
+
+    @media (max-width: 648px) {
+        .titleImg {
+            max-width: 300px;
+            width: calc(100% - 32px);
+            margin-top: 44px;
+        }
+
+        #score {
+            font-size: 30px;
+            margin-left: 40px;
+        }
+    }
 </style>
 <img class="titleImg" src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/logo.svg" />
 <div class="scoreContainer">
@@ -264,6 +277,18 @@ window.onload = function () {
   updateStyleInDiffFrame(gameConfig[3]);
   setGame();
   prefetchAssets(gameConfig);
+  if (window.self !== window.top) {
+    if (window.self !== window.top) {
+      const titleImgEle = document.getElementsByClassName("titleImg")[0];
+      const scoreEle = document.getElementsByClassName("scoreContainer")[0];
+      if (titleImgEle) {
+          titleImgEle.style.display = 'none'
+      }
+      if (scoreEle) {
+          scoreEle.style.display = 'none'
+      }
+  }
+  }
 };
 
 function preloadImages(imageArray) {
