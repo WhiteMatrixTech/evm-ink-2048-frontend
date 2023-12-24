@@ -1,0 +1,297 @@
+<script type="module">
+    import { createApp } from 'https://unpkg.com/petite-vue?module'
+
+    createApp({
+        // exposed to all expressions
+        count: 0,
+        // getters
+        get plusOne() {
+            return this.count + 1
+        },
+        // methods
+        increment() {
+            this.count++
+        }
+    }).mount()
+</script>
+
+<!-- v-scope value can be omitted -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap" rel="stylesheet">
+    <title>2048</title>
+</head>
+
+<body>
+    <style>
+        html {
+            scroll-behavior: smooth;
+            overscroll-behavior: none;
+        }
+
+        body {
+            font-family: 'Baloo 2', sans-serif;
+            margin: 0px;
+            padding: 16px;
+            background: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/bg.png') #b7effe no-repeat top center/cover;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            color: white;
+            min-height: 100vh;
+        }
+
+        body::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            border-radius: 5px;
+            background: rgb(170, 170, 168);
+        }
+
+        .titleImg {
+            width: 386px;
+            margin-top: 44px;
+        }
+
+        .scoreContainer {
+            margin: 40px auto;
+            position: relative;
+            width: 100%;
+            max-width: 533px;
+            height: 68px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #236f81;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .scoreContainer img {
+            position: absolute;
+            left: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 27%;
+            min-width: 144px;
+        }
+
+        #score {
+            font-size: 40px;
+        }
+
+        #gameContainer {
+            width: 100%;
+            max-width: 533px;
+            position: relative;
+        }
+
+        #chessBoardBg {
+            position: absolute;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background-size: contain;
+            width: 100%;
+        }
+
+        #frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: contain;
+        }
+
+        #game {
+            position: absolute;
+            display: grid;
+            aspect-ratio: 1;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            column-gap: 1.17%;
+            row-gap: 0.98%;
+            overflow: hidden;
+            border-radius: 8px;
+            padding: 3.32%;
+            box-sizing: border-box;
+        }
+
+        .description {
+            font-size: 1rem;
+            margin: 5vmin;
+        }
+
+        .tile {
+            display: flex;
+            aspect-ratio: 1;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        @keyframes newTileAnimation {
+            0% {
+                transform: scale(0);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes movementAnimation {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(var(--x-translation), var(--y-translation));
+            }
+        }
+
+        #doneContainer {
+            display: flex;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #02070BA8;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #done {
+            width: 100%;
+            max-width: 533px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        #done #tryAgain {
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .doneBg {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            animation-name: spin;
+            animation-duration: 40000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        .doneText {
+            height: 11.37%;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 100;
+        }
+
+        .winOrLoseImgContainer {
+            width: 100%;
+            aspect-ratio: 0.97;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .win .doneBg {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_bg.webp');
+        }
+
+        .win .doneText {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_text.svg');
+            width: 46.37%;
+        }
+
+        .lose .doneBg {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_bg.webp');
+        }
+
+        .lose .doneText {
+            background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/lose_text.svg');
+            width: 59.45%;
+        }
+
+        @media (max-width: 648px) {
+            .titleImg {
+                max-width: 300px;
+                width: calc(100% - 32px);
+                margin-top: 44px;
+            }
+
+            #score {
+                font-size: 30px;
+                margin-left: 40px;
+            }
+        }
+    </style>
+    <img class="titleImg" src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/logo.svg" />
+    <div class="scoreContainer">
+        <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/score.png" />
+        <span id="score"></span>
+    </div>
+    <div id="gameContainer">
+        <!-- 背景图层 -->
+        <div id="chessBoardBg"></div>
+        <div id="frame"></div>
+        <div id="game">
+            <div id="done" class="">
+                <div id="doneContainer">
+                </div>
+                <div class="winOrLoseImgContainer">
+                    <div class="doneBg"></div>
+                    <div class="doneText"></div>
+                </div>
+                <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/try_again.png"
+                    alt="try again" id="tryAgain" width="232" onclick="tryAgain()" />
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

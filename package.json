@@ -15,6 +15,7 @@
   },
   "packageManager": "yarn@1.22.19",
   "dependencies": {
-    "csv-reader": "^1.0.12"
+    "csv-reader": "^1.0.12",
+    "twothousand-forty-eight": "^0.22.1"
   }
 }
