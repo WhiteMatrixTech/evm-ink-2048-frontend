@@ -220,6 +220,28 @@
             }
         }
 
+        #mintTip {
+            text-align: left;
+            color: #5ea2b3;
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        #chessboardRarity,
+        #chessboardOwnerAddr,
+        #chessboardMintScore,
+        #chessboardMintTime {
+            color: #236F81;
+        }
+
+        #mintScoreBreakLine {
+            display: none;
+        }
+
+        #chessboardMintType {
+            display: none;
+        }
+
         .win .doneBg {
             background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_bg.webp');
         }
@@ -249,6 +271,10 @@
                 font-size: 30px;
                 margin-left: 40px;
             }
+
+            #mintTip {
+                font-size: 16px;
+            }
         }
     </style>
     <img class="titleImg" src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/logo.svg" />
@@ -260,7 +286,6 @@
         <div id="chessBoardBg"></div>
         <div id="frame"></div>
         <div id="game">
-
             <div id="done" class="">
                 <div id="doneContainer">
                 </div>
@@ -271,26 +296,38 @@
                 <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/try_again.png"
                     alt="try again" id="tryAgain" width="232" onclick="tryAgain()" />
             </div>
+
         </div>
-
     </div>
-</body>
+    <p id="mintTip">
+        This 2048.ink is <span id="chessboardRarity"></span> rarity and<br />
+        was minted by<br />
+        <span id="chessboardOwnerAddr"></span><br />
+        <span id="chessboardMintType">with a PLAY to Mint score of <span id="chessboardMintScore"></span></span><br id="mintScoreBreakLine" />
+        on <span id="chessboardMintTime"></span>
+    </p>
 
+</body>
+<script>
+    window.seedId = 2;
+    window.ownerAddr = "0xC223848bcc9764cF26F7392D5FF1277596C9E75F";
+    window.mintScore = 10294;
+    window.gameSeed = 1998;
+    window.mintTime = "11/20/2023 UTC"
+</script>
 <script
     src="https://evm.ink/eip155:137/content/0x8a5aa7efbd761a466514b31ba6218ec638464e04d64bb7d37fa696fa2054055d:0"></script>
-
 <script src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/wasm_init.js"></script>
 
 <script>
     const baseUrl = 'https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/'
     const assetFolder = baseUrl + 'assets/'
-    // seedId 1
-    const chessConfig = window.allSeeds[9999]
+    const chessConfig = window.allSeeds[window.seedId];
     const chessBgUrl = baseUrl + chessConfig[0] + "_Chessboard_BG.png";
     const frameUrl = baseUrl + chessConfig[3] + "_Frame.png";
 
     const gameSize = 4;
-    const gameRandomSeed = 1996;
+    const gameRandomSeed = window.gameSeed;
     let moves = []
     let gameState;
     let tiles;
@@ -306,6 +343,7 @@
             return alert("Game initialization failed")
         }
         setGame();
+        updateTip();
         prefetchAssets(chessConfig);
         if (window.self !== window.top) {
             const titleImgEle = document.getElementsByClassName("titleImg")[0];
@@ -317,6 +355,31 @@
                 scoreEle.style.display = 'none'
             }
         }
+    }
+
+    function updateTip() {
+        const rarityEle = document.getElementById('chessboardRarity');
+        const rarity = getRarity();
+        if (rarityEle) {
+            rarityEle.innerHTML = rarity;
+        }
+        const chessboardOwnerEle = document.getElementById('chessboardOwnerAddr');
+        if (chessboardOwnerEle) {
+            chessboardOwnerEle.innerHTML = window.ownerAddr;
+        }
+        const chessboardMintTypeEle = document.getElementById('chessboardMintType');
+        const scoreEle = document.getElementById('chessboardMintScore')
+        const mintScoreBreakLineEle = document.getElementById('mintScoreBreakLine')
+        if (window.mintScore !== undefined && chessboardMintType && scoreEle && mintScoreBreakLineEle) {
+            chessboardMintTypeEle.style.display = "inline-block"
+            scoreEle.innerHTML = window.mintScore
+            mintScoreBreakLineEle.style.display = 'inline-block'
+        }
+        const chessboardMintTimeEle = document.getElementById('chessboardMintTime')
+        if (chessboardMintTimeEle) {
+            chessboardMintTimeEle.innerHTML = window.mintTime
+        }
+
     }
 
     function updateTilesAndScore() {
@@ -352,18 +415,6 @@
     }
 
     async function setGame() {
-
-        // var script = document.querySelector('script[src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/wasm_init.js"]');
-        // if (script) {
-        //     script.parentNode.removeChild(script);
-        // }
-
-        // var newScript = document.createElement('script');
-        // newScript.src = 'https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/wasm_init.js';
-        // document.head.appendChild(newScript);
-
-       
-        // gameId = gameIns.new_game(gameSize, gameRandomSeed);
         updateTilesAndScore();
         document.getElementById('score').innerHTML = score;
         for (let r = 0; r < gameSize; r++) {
@@ -529,6 +580,19 @@
                 document.getElementById('done').style.display = 'flex';
             }
         }, 10);
+    }
+
+    function getRarity() {
+        const id = window.seedId;
+        if (id < 1200) {
+            return "N";
+        } else if (id < 1200 + 600) {
+            return "R";
+        } else if (id < 1200 + 600 + 140) {
+            return "SR";
+        } else {
+            return "SSR";
+        }
     }
 
 

@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "serve -s ./",
-    "build": "minify mw_card.html > mw_card.min.html",
+    "build": "minify land_card.html > land_card.min.html",
     "dev:algo": "node algorithm.js"
   },
   "devDependencies": {

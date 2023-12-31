@@ -206,6 +206,28 @@ document.body.innerHTML = `<body>
         }
     }
 
+    #mintTip {
+        text-align: left;
+        color: #5ea2b3;
+        font-size: 20px;
+        margin-top: 20px;
+    }
+
+    #chessboardRarity,
+    #chessboardOwnerAddr,
+    #chessboardMintScore,
+    #chessboardMintTime {
+        color: #236F81;
+    }
+
+    #mintScoreBreakLine {
+        display: none;
+    }
+
+    #chessboardMintType {
+        display: none;
+    }
+
     .win .doneBg {
         background-image: url('https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/win_bg.webp');
     }
@@ -235,6 +257,10 @@ document.body.innerHTML = `<body>
             font-size: 30px;
             margin-left: 40px;
         }
+
+        #mintTip {
+            font-size: 16px;
+        }
     }
 </style>
 <img class="titleImg" src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/logo.svg" />
@@ -243,11 +269,9 @@ document.body.innerHTML = `<body>
     <span id="score"></span>
 </div>
 <div id="gameContainer">
-    <!-- 背景图层 -->
     <div id="chessBoardBg"></div>
     <div id="frame"></div>
     <div id="game">
-
         <div id="done" class="">
             <div id="doneContainer">
             </div>
@@ -258,38 +282,138 @@ document.body.innerHTML = `<body>
             <img src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/try_again.png"
                 alt="try again" id="tryAgain" width="232" onclick="tryAgain()" />
         </div>
-    </div>
 
+    </div>
 </div>
+<p id="mintTip">
+    This 2048.ink is <span id="chessboardRarity"></span> rarity and<br />
+    was minted by<br />
+    <span id="chessboardOwnerAddr"></span><br />
+    <span id="chessboardMintType">with a PLAY to Mint score of <span id="chessboardMintScore"></span></span><br id="mintScoreBreakLine" />
+    on <span id="chessboardMintTime"></span>
+</p>
+
 </body>`;
 
 const baseUrl =
   "https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/";
 const assetFolder = baseUrl + "assets/";
-const gameConfig = getGameConfig(window.seedId);
-const chessBgUrl = baseUrl + gameConfig[0] + "_Chessboard_BG.png";
-const frameUrl = baseUrl + gameConfig[3] + "_Frame.png";
-let board;
+const chessConfig = window.allSeeds[window.seedId];
+const chessBgUrl = baseUrl + chessConfig[0] + "_Chessboard_BG.png";
+const frameUrl = baseUrl + chessConfig[3] + "_Frame.png";
+
+const gameSize = 4;
+const gameRandomSeed = window.gameSeed;
+let moves = [];
+let gameState;
+let tiles;
 let score = 0;
-let rows = 4;
-let columns = 4;
-window.onload = function () {
-  updateStyleInDiffFrame(gameConfig[3]);
-  setGame();
-  prefetchAssets(gameConfig);
-  if (window.self !== window.top) {
-    if (window.self !== window.top) {
-      const titleImgEle = document.getElementsByClassName("titleImg")[0];
-      const scoreEle = document.getElementsByClassName("scoreContainer")[0];
-      if (titleImgEle) {
-          titleImgEle.style.display = 'none'
-      }
-      if (scoreEle) {
-          scoreEle.style.display = 'none'
-      }
+let gameIns;
+let gameId;
+
+window.onload = async function () {
+  updateStyleInDiffFrame(chessConfig[3]);
+  const initialized = await initWasm();
+  if (!initialized) {
+    return alert("Game initialization failed");
   }
+  setGame();
+  updateTip();
+  prefetchAssets(chessConfig);
+  if (window.self !== window.top) {
+    const titleImgEle = document.getElementsByClassName("titleImg")[0];
+    const scoreEle = document.getElementsByClassName("scoreContainer")[0];
+    if (titleImgEle) {
+      titleImgEle.style.display = "none";
+    }
+    if (scoreEle) {
+      scoreEle.style.display = "none";
+    }
   }
 };
+
+function updateTip() {
+  const rarityEle = document.getElementById("chessboardRarity");
+  const rarity = getRarity();
+  if (rarityEle) {
+    rarityEle.innerHTML = rarity;
+  }
+  const chessboardOwnerEle = document.getElementById("chessboardOwnerAddr");
+  if (chessboardOwnerEle) {
+    chessboardOwnerEle.innerHTML = window.ownerAddr;
+  }
+  const chessboardMintTypeEle = document.getElementById("chessboardMintType");
+  const scoreEle = document.getElementById("chessboardMintScore");
+  const mintScoreBreakLineEle = document.getElementById("mintScoreBreakLine");
+  if (
+    window.mintScore !== undefined &&
+    chessboardMintType &&
+    scoreEle &&
+    mintScoreBreakLineEle
+  ) {
+    chessboardMintTypeEle.style.display = "inline-block";
+    scoreEle.innerHTML = window.mintScore;
+    mintScoreBreakLineEle.style.display = "inline-block";
+  }
+  const chessboardMintTimeEle = document.getElementById("chessboardMintTime");
+  if (chessboardMintTimeEle) {
+    chessboardMintTimeEle.innerHTML = window.mintTime;
+  }
+}
+
+function updateTilesAndScore() {
+  gameId = gameIns.serialize({
+    V2: {
+      version: 2,
+      seed: gameRandomSeed,
+      width: gameSize,
+      height: gameSize,
+      moves,
+    },
+  });
+  const currentGameState = gameIns.get_gamestate(gameId);
+  const currentTiles = currentGameState.board.tiles
+    .slice(0, gameSize)
+    .map((item) => item.slice(0, gameSize))
+    .map((item) => item.map((innerItem) => innerItem?.value));
+  tiles = currentTiles;
+  score = currentGameState.score_current;
+  gameState = currentGameState;
+}
+
+async function initWasm() {
+  try {
+    const res = await fetch(
+      "https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/twothousand_forty_eight_bg.wasm"
+    )
+      .then((res) => res.arrayBuffer())
+      .then((ab) =>
+        WebAssembly.instantiate(ab, {
+          "./twothousand_forty_eight_bg.js": window.game,
+        })
+      );
+    window.game.__wbg_set_wasm(res.instance.exports);
+    gameIns = window.game;
+    return true;
+  } catch (e) {
+    console.err(e);
+    return false;
+  }
+}
+
+async function setGame() {
+  updateTilesAndScore();
+  document.getElementById("score").innerHTML = score;
+  for (let r = 0; r < gameSize; r++) {
+    for (let c = 0; c < gameSize; c++) {
+      let tile = document.createElement("div");
+      tile.id = r.toString() + "-" + c.toString();
+      let num = tiles[r][c];
+      updateTile(tile, num);
+      document.getElementById("game").append(tile);
+    }
+  }
+}
 
 function preloadImages(imageArray) {
   for (let i = 0; i < imageArray.length; i++) {
@@ -298,13 +422,13 @@ function preloadImages(imageArray) {
   }
 }
 
-function prefetchAssets(gameConfig) {
+function prefetchAssets(chessConfig) {
   const nums = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
   const tileBgs = nums.map((num) => {
-    return baseUrl + gameConfig[1] + "_Tile_BG_" + num + ".png";
+    return baseUrl + chessConfig[1] + "_Tile_BG_" + num + ".png";
   });
   const fonts = nums.map((num) => {
-    return baseUrl + gameConfig[2] + "_Font_" + num + ".png";
+    return baseUrl + chessConfig[2] + "_Font_" + num + ".png";
   });
   const otherAssets = [
     "win_bg.webp",
@@ -314,11 +438,6 @@ function prefetchAssets(gameConfig) {
     "try_again.png",
   ].map((item) => assetFolder + item);
   preloadImages([...tileBgs, ...fonts, ...otherAssets]);
-}
-
-function getGameConfig(seedId) {
-  const gameConfig = window.allSeeds[seedId];
-  return gameConfig;
 }
 
 function updateStyleInDiffFrame(frame) {
@@ -393,32 +512,10 @@ function updateStyleInDiffFrame(frame) {
   gameElement.style.width = contentAreaWidth;
 }
 
-function setGame() {
-  board = [
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-  ];
-
-  document.getElementById("score").innerHTML = score;
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < columns; c++) {
-      let tile = document.createElement("div");
-      tile.id = r.toString() + "-" + c.toString();
-      let num = board[r][c];
-      updateTile(tile, num);
-      document.getElementById("game").append(tile);
-    }
-  }
-  setTwo();
-  setTwo();
-}
-
 function hasEmptyTile() {
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < columns; c++) {
-      if (board[r][c] == 0) {
+  for (let r = 0; r < gameSize; r++) {
+    for (let c = 0; c < gameSize; c++) {
+      if (tiles[r][c] == 0) {
         return true;
       }
     }
@@ -428,21 +525,21 @@ function setTwo() {
   if (!hasEmptyTile()) {
     return;
   }
-  let found = false;
-  while (!found) {
-    //random r, c
-    let r = Math.floor(Math.random() * rows);
-    let c = Math.floor(Math.random() * columns);
-    if (board[r][c] == 0) {
-      board[r][c] = 2;
-      let tile = document.getElementById(r.toString() + "-" + c.toString());
-      updateTile(tile, 2);
-      tile.style.animation = "newTileAnimation 0.3s";
-      tile.addEventListener("animationend", () => {
-        tile.style.animation = "";
-      });
-      found = true;
-    }
+  updateTilesAndScore();
+  // 判断 随机出来2或者4的tile的对象,id最大的那个
+  const newTile = gameState.board.tiles
+    .flat()
+    .find((item) => item?.id === gameState.board.id_counter - 1);
+  if (newTile) {
+    const r = newTile.y;
+    const c = newTile.x;
+    const newValue = newTile.value;
+    let tile = document.getElementById(r.toString() + "-" + c.toString());
+    updateTile(tile, newValue);
+    tile.style.animation = "newTileAnimation 0.3s";
+    tile.addEventListener("animationend", () => {
+      tile.style.animation = "";
+    });
   }
 }
 
@@ -454,12 +551,12 @@ function updateTile(tile, num) {
     tile.innerHTML =
       "<img src='" +
       baseUrl +
-      gameConfig[2] +
+      chessConfig[2] +
       "_Font_" +
       num +
       ".png' style='height:23.5%' />";
     tile.style.backgroundImage =
-      "url('" + baseUrl + gameConfig[1] + "_Tile_BG_" + num + ".png'";
+      "url('" + baseUrl + chessConfig[1] + "_Tile_BG_" + num + ".png'";
     if (num <= 1024) {
       tile.classList.add("x" + num.toString());
     } else {
@@ -467,7 +564,7 @@ function updateTile(tile, num) {
     }
   } else {
     tile.style.backgroundImage =
-      "url('" + baseUrl + gameConfig[0] + "_Tile_BG_Default.png'";
+      "url('" + baseUrl + chessConfig[0] + "_Tile_BG_Default.png'";
   }
 }
 
@@ -480,6 +577,19 @@ function slideTile(tile, r, c) {
       document.getElementById("done").style.display = "flex";
     }
   }, 10);
+}
+
+function getRarity() {
+  const id = window.seedId;
+  if (id < 1200) {
+    return "N";
+  } else if (id < 1200 + 600) {
+    return "R";
+  } else if (id < 1200 + 600 + 140) {
+    return "SR";
+  } else {
+    return "SSR";
+  }
 }
 
 // swipe event listener
@@ -498,18 +608,14 @@ function touchEnd(event) {
   const deltaY = endY - startY;
   if (Math.abs(deltaX) > Math.abs(deltaY)) {
     if (deltaX > 0) {
-      console.log("Right swipe detected");
       slideRight();
     } else {
-      console.log("Left swipe detected");
       slideLeft();
     }
   } else {
     if (deltaY > 0) {
-      console.log("Down swipe detected");
       slideDown();
     } else {
-      console.log("Up swipe detected");
       slideUp();
     }
   }
@@ -572,88 +678,109 @@ function slide(row) {
 
   row = filterZero(row); // [4,2]
 
-  while (row.length < columns) {
+  while (row.length < gameSize) {
     row.push(0);
   } // [4,2,0,0]
 
   return row;
 }
 
-function slideLeft() {
-  for (let r = 0; r < rows; r++) {
-    let row = board[r];
-    row = slide(row);
-    board[r] = row;
+function checkIsAllowSlide(dir) {
+  return gameState.allowed_moves.includes(dir);
+}
 
-    for (let c = 0; c < columns; c++) {
+function slideLeft() {
+  if (!checkIsAllowSlide("LEFT")) {
+    return;
+  }
+  for (let r = 0; r < gameSize; r++) {
+    let row = tiles[r];
+    row = slide(row);
+    tiles[r] = row;
+
+    for (let c = 0; c < gameSize; c++) {
       let tile = document.getElementById(r.toString() + "-" + c.toString());
-      let num = board[r][c];
+      let num = tiles[r][c];
       tile.style.transform = "translateY(tile.offsetLeft)";
       updateTile(tile, num);
       slideTile(tile, r, c);
     }
   }
+  moves.push("LEFT");
   setTwo();
 }
 
 function slideRight() {
-  for (let r = 0; r < rows; r++) {
-    let row = board[r];
+  if (!checkIsAllowSlide("RIGHT")) {
+    return;
+  }
+  for (let r = 0; r < gameSize; r++) {
+    let row = tiles[r];
     row.reverse();
     row = slide(row);
     row.reverse();
-    board[r] = row;
+    tiles[r] = row;
 
-    for (let c = 0; c < columns; c++) {
+    for (let c = 0; c < gameSize; c++) {
       let tile = document.getElementById(r.toString() + "-" + c.toString());
-      let num = board[r][c];
+      let num = tiles[r][c];
       updateTile(tile, num);
       slideTile(tile, r, c);
     }
   }
+  moves.push("RIGHT");
   setTwo();
 }
 
 function slideUp() {
-  for (let c = 0; c < columns; c++) {
-    let row = [board[0][c], board[1][c], board[2][c], board[3][c]];
+  if (!checkIsAllowSlide("UP")) {
+    return;
+  }
+  for (let c = 0; c < gameSize; c++) {
+    let row = [tiles[0][c], tiles[1][c], tiles[2][c], tiles[3][c]];
     row = slide(row);
-    board[0][c] = row[0];
-    board[1][c] = row[1];
-    board[2][c] = row[2];
-    board[3][c] = row[3];
+    tiles[0][c] = row[0];
+    tiles[1][c] = row[1];
+    tiles[2][c] = row[2];
+    tiles[3][c] = row[3];
 
-    for (let r = 0; r < columns; r++) {
+    for (let r = 0; r < gameSize; r++) {
       let tile = document.getElementById(r.toString() + "-" + c.toString());
-      let num = board[r][c];
+      let num = tiles[r][c];
       updateTile(tile, num);
       slideTile(tile, r, c);
     }
   }
+  moves.push("UP");
   setTwo();
 }
 
 function slideDown() {
-  for (let c = 0; c < columns; c++) {
-    let row = [board[0][c], board[1][c], board[2][c], board[3][c]];
+  if (!checkIsAllowSlide("DOWN")) {
+    return;
+  }
+  for (let c = 0; c < gameSize; c++) {
+    let row = [tiles[0][c], tiles[1][c], tiles[2][c], tiles[3][c]];
     row.reverse();
     row = slide(row);
-    board[0][c] = row[3];
-    board[1][c] = row[2];
-    board[2][c] = row[1];
-    board[3][c] = row[0];
+    tiles[0][c] = row[3];
+    tiles[1][c] = row[2];
+    tiles[2][c] = row[1];
+    tiles[3][c] = row[0];
 
-    for (let r = 0; r < columns; r++) {
+    for (let r = 0; r < gameSize; r++) {
       let tile = document.getElementById(r.toString() + "-" + c.toString());
-      let num = board[r][c];
+      let num = tiles[r][c];
       updateTile(tile, num);
       slideTile(tile, r, c);
     }
   }
+  moves.push("DOWN");
   setTwo();
 }
 function tryAgain() {
   document.getElementById("done").style.display = "none";
+  moves = [];
   score = 0;
   document.querySelectorAll(".tile").forEach((e) => e.remove());
   setGame();
@@ -661,21 +788,21 @@ function tryAgain() {
 
 function gameOver() {
   // Check if the player has achieved the 2048 tile
-  if (board.some((row) => row.includes(2048))) {
+  if (tiles.some((row) => row.includes(2048))) {
     document.getElementById("done").className = "win";
     return true;
   }
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < columns; c++) {
-      const currentTile = board[r][c];
+  for (let r = 0; r < gameSize; r++) {
+    for (let c = 0; c < gameSize; c++) {
+      const currentTile = tiles[r][c];
       if (currentTile == 0) {
         return false; // There is an empty tile, game is not over
       }
       if (
-        (r > 0 && board[r - 1][c] == currentTile) ||
-        (r < rows - 1 && board[r + 1][c] == currentTile) ||
-        (c > 0 && board[r][c - 1] == currentTile) ||
-        (c < columns - 1 && board[r][c + 1] == currentTile)
+        (r > 0 && tiles[r - 1][c] == currentTile) ||
+        (r < gameSize - 1 && tiles[r + 1][c] == currentTile) ||
+        (c > 0 && tiles[r][c - 1] == currentTile) ||
+        (c < gameSize - 1 && tiles[r][c + 1] == currentTile)
       ) {
         return false; // There is a possible merge, game is not over
       }
