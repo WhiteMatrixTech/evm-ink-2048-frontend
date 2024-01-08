@@ -10,7 +10,7 @@ document.body.innerHTML = `<body>
         box-sizing: border-box;
         height: 100%;
         min-height: 100vh;
-        background-image: url('https://evm.ink/eip155:137/content/0x7b42000889372f1f76256338cf6c04e11f2a2d42c8841567a7ed78091a51a90a:0');
+        background-image: url('https://static.evm.ink/eip155:137/content/0x7b42000889372f1f76256338cf6c04e11f2a2d42c8841567a7ed78091a51a90a:0');
         background-size: cover;
         background-position: center
     }
@@ -92,18 +92,18 @@ document.body.innerHTML = `<body>
 </style>
 <div class="cardFlip" style="transform:rotateY(0deg)">
     <div id="back">
-        <img src="https://evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
+        <img src="https://static.evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
             id="back-landImg" class="landImg" />
         <div class='bottom' id="back-bottom">
             <div class="line">
                 <img class="chainLogo"
-                    src="https://evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
+                    src="https://static.evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
                     width="18" />
                 <span class="text owner"></span>
             </div>
             <div class="line">
                 <img class="clockLogo"
-                    src="https://evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
+                    src="https://static.evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
                     width="17" />
                 <span class="text date"></span>
             </div>
@@ -114,18 +114,18 @@ document.body.innerHTML = `<body>
         </div>
     </div>
     <div id="front">
-        <img src="https://evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
+        <img src="https://static.evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
             id="front-landImg" class="landImg" onerror="this.style.display='none';" />
         <div class='bottom' id="front-bottom">
             <div class="line">
                 <img class="chainLogo"
-                    src="https://evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
+                    src="https://static.evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
                     width="18" />
                 <span class="text owner"></span>
             </div>
             <div class="line">
                 <img class="clockLogo"
-                    src="https://evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
+                    src="https://static.evm.ink/eip155:137/content/0x8857baa41a23c8d301ee5b91d73a87f23bbc7d2edb3a16f08b03936bcf0b0a4f:0"
                     width="17" />
                 <span class="text date"></span>
             </div>
@@ -207,5 +207,5 @@ function getElesByCls(cls) {
 }
 
 function getEvmAssetsLinkByTxHash(tx) {
-    return "https://evm.ink/eip155:137/content/" + tx + ":0"
+    return "https://static.evm.ink/eip155:137/content/" + tx + ":0"
 }

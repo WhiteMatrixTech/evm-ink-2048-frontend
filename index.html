@@ -303,20 +303,25 @@
         This 2048.ink is <span id="chessboardRarity"></span> rarity and<br />
         was minted by<br />
         <span id="chessboardOwnerAddr"></span><br />
-        <span id="chessboardMintType">with a PLAY to Mint score of <span id="chessboardMintScore"></span></span><br id="mintScoreBreakLine" />
+        <span id="chessboardMintType">with a PLAY to Mint score of <span id="chessboardMintScore"></span></span><br
+            id="mintScoreBreakLine" />
         on <span id="chessboardMintTime"></span>
     </p>
-
 </body>
 <script>
-    window.seedId = 2;
+    // 0 -1999
+    window.seedId = 1999;
+    // mint棋盘人的钱包地址
     window.ownerAddr = "0xC223848bcc9764cF26F7392D5FF1277596C9E75F";
-    window.mintScore = 10294;
+    // mint时候的分数，如果是0，则是directly mint，有值就是play mint
+    window.mintScore = 0;
+    // 游戏的种子
     window.gameSeed = 1998;
-    window.mintTime = "11/20/2023 UTC"
+    // mint的时间
+    window.mintTime = 1704249386
 </script>
 <script
-    src="https://evm.ink/eip155:137/content/0x8a5aa7efbd761a466514b31ba6218ec638464e04d64bb7d37fa696fa2054055d:0"></script>
+    src="https://static.evm.ink/eip155:137/content/0x8a5aa7efbd761a466514b31ba6218ec638464e04d64bb7d37fa696fa2054055d:0"></script>
 <script src="https://inscription-2048-frontend.s3.ap-northeast-1.amazonaws.com/assets/wasm_init.js"></script>
 
 <script>
@@ -370,17 +375,26 @@
         const chessboardMintTypeEle = document.getElementById('chessboardMintType');
         const scoreEle = document.getElementById('chessboardMintScore')
         const mintScoreBreakLineEle = document.getElementById('mintScoreBreakLine')
-        if (window.mintScore !== undefined && chessboardMintType && scoreEle && mintScoreBreakLineEle) {
+        if (window.mintScore !== 0 && chessboardMintType && scoreEle && mintScoreBreakLineEle) {
             chessboardMintTypeEle.style.display = "inline-block"
             scoreEle.innerHTML = window.mintScore
             mintScoreBreakLineEle.style.display = 'inline-block'
         }
         const chessboardMintTimeEle = document.getElementById('chessboardMintTime')
         if (chessboardMintTimeEle) {
-            chessboardMintTimeEle.innerHTML = window.mintTime
+            chessboardMintTimeEle.innerHTML = formatDate()
         }
-
     }
+
+    function formatDate() {
+        const date = new Date(window.mintTime * 1000);
+        const year = date.getUTCFullYear();
+        const month = date.getUTCMonth() + 1;
+        const day = date.getUTCDate();
+        const formattedDate = `${month}/${day}/${year} UTC`;
+        return formattedDate;
+    }
+
 
     function updateTilesAndScore() {
         gameId = gameIns.serialize({
